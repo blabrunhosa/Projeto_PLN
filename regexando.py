@@ -5,66 +5,194 @@ import os
 import random
 
 CAMINHOS_ARQUIVOS = [
-    'Dados\DADOS1.xls',
-    'Dados\DADOS2.xls',
-    'Dados\DADOS3.xls',
-    'Dados\DADOS4.xls',
-    'Dados\DADOS5.xls',
-    'Dados\DADOS6.xls',
-    'Dados\DADOS7.xls',
-    'Dados\DADOS8.xls',
-    'Dados\DADOS9.xls',
-    'Dados\DADOS10.xls',
-    'Dados\DADOS11.xls',
-    'Dados\DADOS12.xls',
-    'Dados\DADOS13.xls',
-    'Dados\DADOS14.xls',
-    'Dados\DADOS15.xls',
-    'Dados\DADOS16.xls',
-    'Dados\DADOS17.xls',
+    'Dados\\DADOS1.xls',
+    'Dados\\DADOS2.xls',
+    'Dados\\DADOS3.xls',
+    'Dados\\DADOS4.xls',
+    'Dados\\DADOS5.xls',
+    'Dados\\DADOS6.xls',
+    'Dados\\DADOS7.xls',
+    'Dados\\DADOS8.xls',
+    'Dados\\DADOS9.xls',
+    'Dados\\DADOS10.xls',
+    'Dados\\DADOS11.xls',
+    'Dados\\DADOS12.xls',
+    'Dados\\DADOS13.xls',
+    'Dados\\DADOS14.xls',
+    'Dados\\DADOS15.xls',
+    'Dados\\DADOS16.xls',
+    'Dados\\DADOS17.xls',
 ]
 
-COLUNA_ABSTRACT = 'Abstract' # coluna V
-COLUNA_TITULO = 'Article Title' # coluna I
+COLUNA_ABSTRACT = 'Abstract'
+COLUNA_TITULO = 'Article Title'
+COLUNA_ANO = 'Publication Year'
 
-ACELERADORES = ['LHC', 'Large Hadron Collider', 'RHIC', 'Relativistic Heavy Ion Collider']
-DETECTORES = ['ALICE', 'CMS', 'ATLAS', 'LHCb', 'STAR', 'sPHENIX']
-COLISOES_POSSIVEIS = ["Pb", "Au", "Xe", "O", "p", "d", "e\\+", "e-"]
+ACELERADORES = [
+    'LHC', 'Large Hadron Collider', 'RHIC', 'Relativistic Heavy Ion Collider',
+    'SPS', 'Super Proton Synchrotron', 'FAIR', 'NICA', 'J-PARC'
+]
+
+DETECTORES = [
+    'ALICE', 'CMS', 'ATLAS', 'LHCb',
+    'STAR', 'sPHENIX', 'PHENIX', 'BRAHMS', 'PHOBOS',
+    'NA61/SHINE', 'NA49', 'HADES',
+    'CBM', 'MPD', 'BM@N',
+    'BESIII', 'COMPASS', 'HERMES',
+]
 
 TRACOS_UNICODE = ["\u2010", "\u2011", "\u2012", "\u2013", "\u2014", "\u2212"]
 
-padrao_aceleradores = re.compile(r"\b(" + "|".join(ACELERADORES) + r")\b")
-padrao_detectores = re.compile(r"\b(" + "|".join(DETECTORES) + r")\b")
+SUPERSCRITOS = {
+    "\u2070": "0", "\u00b9": "1", "\u00b2": "2", "\u00b3": "3", "\u2074": "4",
+    "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9",
+}
+
+NUCLEOS = [
+    "Pb", "Au", "Xe", "Kr", "Ar", "Ne", "He",
+    "Cu", "U", "Ru", "Zr", "Ag", "In", "Sn", "La", "Ta", "Bi",
+    "Ca", "Fe", "Ni", "Sm", "Gd", "Al", "Si", "O", "N", "C",
+]
+# partículas leves de uma letra/símbolo (alto risco de falso positivo isolado,
+# por isso são sempre validadas depois com checagem de contexto)
+PARTICULAS_LEVES = ["d", "t", "p", "n", "e\\+", "e-", "\u03b1"]
+
+ESPECIES_COLISAO = NUCLEOS + PARTICULAS_LEVES
+
+# número de massa opcional antes do símbolo, ex: "208" em "208Pb"
+MASSA_OPCIONAL = r"(?:\d{1,3})?"
+
+# um "token" de colisão = massa opcional + símbolo da espécie
+TOKEN_COLISAO = r"(" + MASSA_OPCIONAL + r"(?:" + "|".join(ESPECIES_COLISAO) + r"))"
+
+# separador entre os dois tokens: hífen, mais, "on", ou nada (concatenado: "PbPb")
+SEPARADOR_COLISAO = r"(?:\s*[-+]\s*|\s+on\s+)?"
 
 padrao_colisoes = re.compile(
-    r"\b(" + "|".join(COLISOES_POSSIVEIS) + r")-(" + "|".join(COLISOES_POSSIVEIS) + r")\b"
+    r"\b" + TOKEN_COLISAO + SEPARADOR_COLISAO + TOKEN_COLISAO + r"\b"
 )
+
+# distância (em palavras) pra considerar que o par de espécies é realmente
+# uma colisão, e não um falso positivo tipo "p-n junction" de um detector
+DISTANCIA_PALAVRAS_COLISAO = 8
+padrao_contexto_colisao = re.compile(r"collisions?|collide[sd]?|reaction", re.IGNORECASE)
+
+# Estranheza, heavy-flavour e tipos de partícula
+
+TERMOS_ESTRANHEZA = [
+    'strangeness', 'strange quark', 'hyperon', 'Lambda', '\u039b',
+    'Xi', '\u039e', 'Omega', '\u03a9', 'kaon', 'K0', 'K\\+', 'K-'
+]
+
+TERMOS_HEAVY_FLAVOR = [
+    'heavy flavor', 'heavy-flavor', 'heavy flavour', 'heavy-flavour',
+    'charm', 'bottom', 'beauty', 'J/\u03c8', 'J/psi', 'Upsilon', '\u03a5',
+    'D meson', 'D0', 'B meson', 'open charm', 'open beauty'
+]
+
+TIPOS_PARTICULA = {
+    'Méson': ['pion', 'kaon', 'J/\u03c8', 'J/psi', 'D meson', 'B meson',
+              'phi meson', 'rho meson', 'Upsilon', '\u03a5', 'K0'],
+    'Bárion': ['proton', 'neutron', 'Lambda', '\u039b', 'Xi', '\u039e',
+               'Omega', '\u03a9', 'hyperon', 'Sigma', '\u03a3'],
+    'Lépton': ['electron', 'positron', 'muon', 'tau lepton', 'neutrino'],
+    'Bóson': ['photon', 'gluon', 'W boson', 'Z boson', 'Higgs'],
+}
+
+# 'centrality' precisa aparecer a até essa quantidade de palavras de distância
+DISTANCIA_PALAVRAS_CENTRALIDADE = 10
+
+padrao_centralidade = re.compile(
+    r"(?:"
+    rf"(?<=\bcentrality\b(?:\W+\w+){{0,{DISTANCIA_PALAVRAS_CENTRALIDADE}}}\W)"
+    r"|"
+    rf"(?=\w+(?:\W+\w+){{0,{DISTANCIA_PALAVRAS_CENTRALIDADE}}}\W+centrality\b)"
+    r")"
+    r"\b(\d{1,3}\s*-\s*\d{1,3}\s*%|most central|mid-central|semi-central|central|peripheral)\b",
+    re.IGNORECASE
+)
+
+padrao_aceleradores = re.compile(r"\b(" + "|".join(ACELERADORES) + r")\b")
+padrao_detectores = re.compile(r"\b(" + "|".join(DETECTORES) + r")\b")
 
 padrao_energia = re.compile(
     r"(?:\u221a|sqrt)?\s*\(?\s*s(?:_?\{?\s*NN\s*\}?)?\s*\)?\s*=\s*(\d+(?:\.\d+)?)\s*(TeV|GeV|MeV)",
     re.IGNORECASE
 )
 
-def substituir_tracos(texto):
-    # troca tudo por "-" normal
+padrao_estranheza = re.compile(r"\b(" + "|".join(TERMOS_ESTRANHEZA) + r")\b", re.IGNORECASE)
+padrao_heavy_flavor = re.compile(r"\b(" + "|".join(TERMOS_HEAVY_FLAVOR) + r")\b", re.IGNORECASE)
+
+padroes_tipo_particula = {
+    tipo: re.compile(r"\b(" + "|".join(termos) + r")\b", re.IGNORECASE)
+    for tipo, termos in TIPOS_PARTICULA.items()
+}
+
+
+def normalizar_texto(texto):
+    # unifica os vários tipos de travessão em "-"
     for traco in TRACOS_UNICODE:
         texto = texto.replace(traco, "-")
+    # converte dígitos sobrescritos (isótopos tipo ²⁰⁸Pb) em dígitos normais
+    for sobrescrito, normal in SUPERSCRITOS.items():
+        texto = texto.replace(sobrescrito, normal)
     texto = re.sub(r"\s+", " ", texto)
     return texto.strip()
 
-def processar_abstract(abstract):
-    # se não tem abstract (NaN, float, etc) devolve tudo vazio
-    if pd.isna(abstract) or not isinstance(abstract, str):
-        return {'aceleradores': [], 'detectores': [], 'colisoes': [], 'energia': []}
 
-    texto = substituir_tracos(abstract)
+def identificar_tipos_particula(texto):
+    tipos_encontrados = []
+    for tipo, padrao in padroes_tipo_particula.items():
+        if padrao.search(texto):
+            tipos_encontrados.append(tipo)
+    return tipos_encontrados
+
+
+def contexto_indica_colisao(texto, inicio, fim):
+    """
+    Verifica se, perto do trecho [inicio:fim) que bateu no padrao_colisoes,
+    existe alguma palavra como 'collision(s)', 'collide(d/s)' ou 'reaction'.
+    Isso evita falso positivo tipo 'p-n junction' virar colisão próton-nêutron.
+    """
+    antes = texto[:inicio].split()[-DISTANCIA_PALAVRAS_COLISAO:]
+    depois = texto[fim:].split()[:DISTANCIA_PALAVRAS_COLISAO]
+    janela = " ".join(antes + depois)
+    return bool(padrao_contexto_colisao.search(janela))
+
+
+def extrair_colisoes(texto):
+    """
+    Encontra pares de espécies em colisão (ex: Pb-Pb, 208Pb+208Pb, p-Pb, PbPb)
+    e descarta os que não têm contexto de colisão por perto.
+    """
+    pares_validos = []
+    for m in padrao_colisoes.finditer(texto):
+        if contexto_indica_colisao(texto, m.start(), m.end()):
+            pares_validos.append((m.group(1), m.group(2)))
+    return pares_validos
+
+
+def processar_abstract(abstract):
+    if pd.isna(abstract) or not isinstance(abstract, str):
+        return {
+            'aceleradores': [], 'detectores': [], 'colisoes': [], 'energia': [],
+            'estranheza': False, 'heavy_flavor': False, 'tipos_particula': [],
+            'centralidade': [],
+        }
+
+    texto = normalizar_texto(abstract)
 
     return {
         'aceleradores': padrao_aceleradores.findall(texto),
         'detectores': padrao_detectores.findall(texto),
-        'colisoes': padrao_colisoes.findall(texto),
+        'colisoes': extrair_colisoes(texto),
         'energia': padrao_energia.findall(texto),
+        'estranheza': bool(padrao_estranheza.search(texto)),
+        'heavy_flavor': bool(padrao_heavy_flavor.search(texto)),
+        'tipos_particula': identificar_tipos_particula(texto),
+        'centralidade': padrao_centralidade.findall(texto),
     }
+
 
 def ler_arquivo_excel(caminho):
     if not os.path.exists(caminho):
@@ -73,6 +201,16 @@ def ler_arquivo_excel(caminho):
     tabela = pd.read_excel(caminho)
     return tabela
 
+
+def extrair_ano(linha):
+    if COLUNA_ANO not in linha or pd.isna(linha[COLUNA_ANO]):
+        return None
+    try:
+        return int(linha[COLUNA_ANO])
+    except (ValueError, TypeError):
+        return None
+
+
 def processar_uma_linha(linha, indice, nome_arquivo):
     titulo = linha[COLUNA_TITULO]
     if pd.isna(titulo):
@@ -80,9 +218,12 @@ def processar_uma_linha(linha, indice, nome_arquivo):
 
     abstract = linha[COLUNA_ABSTRACT]
     info = processar_abstract(abstract)
+    ano = extrair_ano(linha)
 
     tem_alguma_coisa = bool(
         info['aceleradores'] or info['detectores'] or info['colisoes'] or info['energia']
+        or info['estranheza'] or info['heavy_flavor'] or info['tipos_particula']
+        or info['centralidade']
     )
 
     resultado = {
@@ -90,17 +231,22 @@ def processar_uma_linha(linha, indice, nome_arquivo):
         'linha': indice,
         'titulo': titulo,
         'abstract': abstract if isinstance(abstract, str) else '',
+        'ano': ano,
         'aceleradores': info['aceleradores'],
         'detectores': info['detectores'],
         'colisoes': info['colisoes'],
         'energia': info['energia'],
+        'estranheza': info['estranheza'],
+        'heavy_flavor': info['heavy_flavor'],
+        'tipos_particula': info['tipos_particula'],
+        'centralidade': info['centralidade'],
         'tem_algo': tem_alguma_coisa,
     }
 
     return resultado
 
+
 def processar_todos_os_arquivos(caminhos):
-    # junta tudo em uma LISTA
     todos_resultados = []
 
     for caminho in caminhos:
@@ -118,6 +264,7 @@ def processar_todos_os_arquivos(caminhos):
         print(f"{len(tabela)} linhas processadas")
     return todos_resultados
 
+
 def mostrar_estatisticas(resultados):
     total = len(resultados)
     if total == 0:
@@ -129,6 +276,10 @@ def mostrar_estatisticas(resultados):
     total_detectores = sum(1 for r in resultados if r['detectores'])
     total_colisoes = sum(1 for r in resultados if r['colisoes'])
     total_energia = sum(1 for r in resultados if r['energia'])
+    total_estranheza = sum(1 for r in resultados if r['estranheza'])
+    total_heavy_flavor = sum(1 for r in resultados if r['heavy_flavor'])
+    total_tipo_particula = sum(1 for r in resultados if r['tipos_particula'])
+    total_centralidade = sum(1 for r in resultados if r['centralidade'])
 
     print()
     print("Estatísticas")
@@ -139,23 +290,29 @@ def mostrar_estatisticas(resultados):
     print(f"Com detector: {total_detectores} ({total_detectores/total*100:.1f} %)")
     print(f"Com colisão: {total_colisoes} ({total_colisoes/total*100:.1f} %)")
     print(f"Com energia: {total_energia} ({total_energia/total*100:.1f} %)")
+    print(f"Com estranheza: {total_estranheza} ({total_estranheza/total*100:.1f} %)")
+    print(f"Com heavy-flavour: {total_heavy_flavor} ({total_heavy_flavor/total*100:.1f} %)")
+    print(f"Com tipo de partícula identificado: {total_tipo_particula} ({total_tipo_particula/total*100:.1f} %)")
+    print(f"Com centralidade: {total_centralidade} ({total_centralidade/total*100:.1f} %)")
 
-# para deixar o texto ok
+
 def formatar_lista_simples(lista):
-    # tira repetido e junta com
     vistos = []
     for item in lista:
         if item not in vistos:
             vistos.append(item)
     return "; ".join(vistos) if vistos else ""
 
+
 def formatar_colisoes(lista_de_pares):
     formatado = [f"{a}-{b}" for a, b in lista_de_pares]
     return formatar_lista_simples(formatado)
 
+
 def formatar_energia(lista_de_pares):
     formatado = [f"{valor} {unidade}" for valor, unidade in lista_de_pares]
     return formatar_lista_simples(formatado)
+
 
 def montar_dataframe_final(resultados):
     linhas_relevantes = [r for r in resultados if r['tem_algo']]
@@ -164,15 +321,21 @@ def montar_dataframe_final(resultados):
     for r in linhas_relevantes:
         linha = {
             'Título': r['titulo'],
+            'Ano': r['ano'],
             'Abstract': r['abstract'],
             'Acelerador': formatar_lista_simples(r['aceleradores']),
             'Detector': formatar_lista_simples(r['detectores']),
             'Colisão': formatar_colisoes(r['colisoes']),
             'Energia': formatar_energia(r['energia']),
+            'Estranheza': r['estranheza'],
+            'Heavy-flavour': r['heavy_flavor'],
+            'Tipo': formatar_lista_simples(r['tipos_particula']),
+            'Centralidade': formatar_lista_simples(r['centralidade']),
         }
         linhas_formatadas.append(linha)
 
     return pd.DataFrame(linhas_formatadas)
+
 
 if __name__ == "__main__":
     print("PROCESSANDO OS ARQUIVOS")
@@ -180,12 +343,20 @@ if __name__ == "__main__":
     resultados = processar_todos_os_arquivos(CAMINHOS_ARQUIVOS)
     mostrar_estatisticas(resultados)
 
-    # df completo
     df_completo = pd.DataFrame(resultados)
     df_completo.to_csv('resultados_completos.csv', index=False, encoding='utf-8-sig')
     print("Arquivo: resultados_completos.csv")
 
-    # dataframe que importa
     df_final = montar_dataframe_final(resultados)
     df_final.to_csv('dataframe_final.csv', index=False, encoding='utf-8-sig')
     print(f"Arquivo: dataframe_final.csv ({len(df_final)} linhas)")
+
+    linhas_com_centralidade = [r for r in resultados if r['centralidade']]
+    with open('abstracts_com_centralidade.txt', 'w', encoding='utf-8') as f:
+        for r in linhas_com_centralidade:
+            f.write(f"Título: {r['titulo']}\n")
+            f.write(f"Arquivo: {r['arquivo']} | Linha: {r['linha']}\n")
+            f.write(f"Centralidade encontrada: {formatar_lista_simples(r['centralidade'])}\n")
+            f.write(f"Abstract: {r['abstract']}\n")
+            f.write("-" * 80 + "\n\n")
+    print(f"Arquivo: abstracts_com_centralidade.txt ({len(linhas_com_centralidade)} abstracts)")
