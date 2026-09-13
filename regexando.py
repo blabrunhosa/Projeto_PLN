@@ -53,31 +53,42 @@ NUCLEOS = [
     "Cu", "U", "Ru", "Zr", "Ag", "In", "Sn", "La", "Ta", "Bi",
     "Ca", "Fe", "Ni", "Sm", "Gd", "Al", "Si", "O", "N", "C",
 ]
-# partículas leves de uma letra/símbolo (alto risco de falso positivo isolado,
-# por isso são sempre validadas depois com checagem de contexto)
 PARTICULAS_LEVES = ["d", "t", "p", "n", "e\\+", "e-", "\u03b1"]
 
 ESPECIES_COLISAO = NUCLEOS + PARTICULAS_LEVES
 
-# número de massa opcional antes do símbolo, ex: "208" em "208Pb"
 MASSA_OPCIONAL = r"(?:\d{1,3})?"
-
-# um "token" de colisão = massa opcional + símbolo da espécie
 TOKEN_COLISAO = r"(" + MASSA_OPCIONAL + r"(?:" + "|".join(ESPECIES_COLISAO) + r"))"
-
-# separador entre os dois tokens: hífen, mais, "on", ou nada (concatenado: "PbPb")
 SEPARADOR_COLISAO = r"(?:\s*[-+]\s*|\s+on\s+)?"
 
 padrao_colisoes = re.compile(
     r"\b" + TOKEN_COLISAO + SEPARADOR_COLISAO + TOKEN_COLISAO + r"\b"
 )
 
-# distância (em palavras) pra considerar que o par de espécies é realmente
-# uma colisão, e não um falso positivo tipo "p-n junction" de um detector
 DISTANCIA_PALAVRAS_COLISAO = 8
-padrao_contexto_colisao = re.compile(r"collisions?|collide[sd]?|reaction", re.IGNORECASE)
+padrao_contexto_colisao = re.compile(
+    r"collisions?|collide[sd]?|reaction|interactions?|scattering",
+    re.IGNORECASE
+)
 
-# Estranheza, heavy-flavour e tipos de partícula
+DISTANCIA_PALAVRAS_CENTRALIDADE = 10
+padrao_centralidade = re.compile(
+    r"(?:"
+    rf"(?<=\bcentrality\b(?:\W+\w+){{0,{DISTANCIA_PALAVRAS_CENTRALIDADE}}}\W)"
+    r"|"
+    rf"(?=\w+(?:\W+\w+){{0,{DISTANCIA_PALAVRAS_CENTRALIDADE}}}\W+centrality\b)"
+    r")"
+    r"\b(\d{1,3}\s*-\s*\d{1,3}\s*%|most central|mid-central|semi-central|central|peripheral)",
+    re.IGNORECASE
+)
+
+padrao_aceleradores = re.compile(r"\b(" + "|".join(ACELERADORES) + r")\b")
+padrao_detectores = re.compile(r"\b(" + "|".join(DETECTORES) + r")\b")
+
+padrao_energia = re.compile(
+    r"(?:\u221a|sqrt)?\s*\(?\s*s(?:_?\{?\s*NN\s*\}?)?\s*\)?\s*=\s*(\d+(?:\.\d+)?)\s*(TeV|GeV|MeV)",
+    re.IGNORECASE
+)
 
 TERMOS_ESTRANHEZA = [
     'strangeness', 'strange quark', 'hyperon', 'Lambda', '\u039b',
@@ -99,27 +110,6 @@ TIPOS_PARTICULA = {
     'Bóson': ['photon', 'gluon', 'W boson', 'Z boson', 'Higgs'],
 }
 
-# 'centrality' precisa aparecer a até essa quantidade de palavras de distância
-DISTANCIA_PALAVRAS_CENTRALIDADE = 10
-
-padrao_centralidade = re.compile(
-    r"(?:"
-    rf"(?<=\bcentrality\b(?:\W+\w+){{0,{DISTANCIA_PALAVRAS_CENTRALIDADE}}}\W)"
-    r"|"
-    rf"(?=\w+(?:\W+\w+){{0,{DISTANCIA_PALAVRAS_CENTRALIDADE}}}\W+centrality\b)"
-    r")"
-    r"\b(\d{1,3}\s*-\s*\d{1,3}\s*%|most central|mid-central|semi-central|central|peripheral)\b",
-    re.IGNORECASE
-)
-
-padrao_aceleradores = re.compile(r"\b(" + "|".join(ACELERADORES) + r")\b")
-padrao_detectores = re.compile(r"\b(" + "|".join(DETECTORES) + r")\b")
-
-padrao_energia = re.compile(
-    r"(?:\u221a|sqrt)?\s*\(?\s*s(?:_?\{?\s*NN\s*\}?)?\s*\)?\s*=\s*(\d+(?:\.\d+)?)\s*(TeV|GeV|MeV)",
-    re.IGNORECASE
-)
-
 padrao_estranheza = re.compile(r"\b(" + "|".join(TERMOS_ESTRANHEZA) + r")\b", re.IGNORECASE)
 padrao_heavy_flavor = re.compile(r"\b(" + "|".join(TERMOS_HEAVY_FLAVOR) + r")\b", re.IGNORECASE)
 
@@ -130,10 +120,8 @@ padroes_tipo_particula = {
 
 
 def normalizar_texto(texto):
-    # unifica os vários tipos de travessão em "-"
     for traco in TRACOS_UNICODE:
         texto = texto.replace(traco, "-")
-    # converte dígitos sobrescritos (isótopos tipo ²⁰⁸Pb) em dígitos normais
     for sobrescrito, normal in SUPERSCRITOS.items():
         texto = texto.replace(sobrescrito, normal)
     texto = re.sub(r"\s+", " ", texto)
@@ -149,11 +137,6 @@ def identificar_tipos_particula(texto):
 
 
 def contexto_indica_colisao(texto, inicio, fim):
-    """
-    Verifica se, perto do trecho [inicio:fim) que bateu no padrao_colisoes,
-    existe alguma palavra como 'collision(s)', 'collide(d/s)' ou 'reaction'.
-    Isso evita falso positivo tipo 'p-n junction' virar colisão próton-nêutron.
-    """
     antes = texto[:inicio].split()[-DISTANCIA_PALAVRAS_COLISAO:]
     depois = texto[fim:].split()[:DISTANCIA_PALAVRAS_COLISAO]
     janela = " ".join(antes + depois)
@@ -161,31 +144,33 @@ def contexto_indica_colisao(texto, inicio, fim):
 
 
 def extrair_colisoes(texto):
-    """
-    Encontra pares de espécies em colisão (ex: Pb-Pb, 208Pb+208Pb, p-Pb, PbPb)
-    e descarta os que não têm contexto de colisão por perto.
-    """
     pares_validos = []
+    pares_duvidosos = []
     for m in padrao_colisoes.finditer(texto):
+        par = (m.group(1), m.group(2))
         if contexto_indica_colisao(texto, m.start(), m.end()):
-            pares_validos.append((m.group(1), m.group(2)))
-    return pares_validos
+            pares_validos.append(par)
+        else:
+            pares_duvidosos.append(par)
+    return pares_validos, pares_duvidosos
 
 
 def processar_abstract(abstract):
     if pd.isna(abstract) or not isinstance(abstract, str):
         return {
-            'aceleradores': [], 'detectores': [], 'colisoes': [], 'energia': [],
-            'estranheza': False, 'heavy_flavor': False, 'tipos_particula': [],
-            'centralidade': [],
+            'aceleradores': [], 'detectores': [], 'colisoes': [], 'colisoes_duvidosas': [],
+            'energia': [], 'estranheza': False, 'heavy_flavor': False,
+            'tipos_particula': [], 'centralidade': [],
         }
 
     texto = normalizar_texto(abstract)
+    colisoes_validas, colisoes_duvidosas = extrair_colisoes(texto)
 
     return {
         'aceleradores': padrao_aceleradores.findall(texto),
         'detectores': padrao_detectores.findall(texto),
-        'colisoes': extrair_colisoes(texto),
+        'colisoes': colisoes_validas,
+        'colisoes_duvidosas': colisoes_duvidosas,
         'energia': padrao_energia.findall(texto),
         'estranheza': bool(padrao_estranheza.search(texto)),
         'heavy_flavor': bool(padrao_heavy_flavor.search(texto)),
@@ -221,7 +206,8 @@ def processar_uma_linha(linha, indice, nome_arquivo):
     ano = extrair_ano(linha)
 
     tem_alguma_coisa = bool(
-        info['aceleradores'] or info['detectores'] or info['colisoes'] or info['energia']
+        info['aceleradores'] or info['detectores'] or info['colisoes']
+        or info['colisoes_duvidosas'] or info['energia']
         or info['estranheza'] or info['heavy_flavor'] or info['tipos_particula']
         or info['centralidade']
     )
@@ -235,6 +221,7 @@ def processar_uma_linha(linha, indice, nome_arquivo):
         'aceleradores': info['aceleradores'],
         'detectores': info['detectores'],
         'colisoes': info['colisoes'],
+        'colisoes_duvidosas': info['colisoes_duvidosas'],
         'energia': info['energia'],
         'estranheza': info['estranheza'],
         'heavy_flavor': info['heavy_flavor'],
@@ -275,6 +262,7 @@ def mostrar_estatisticas(resultados):
     total_aceleradores = sum(1 for r in resultados if r['aceleradores'])
     total_detectores = sum(1 for r in resultados if r['detectores'])
     total_colisoes = sum(1 for r in resultados if r['colisoes'])
+    total_colisoes_duvidosas = sum(1 for r in resultados if r['colisoes_duvidosas'])
     total_energia = sum(1 for r in resultados if r['energia'])
     total_estranheza = sum(1 for r in resultados if r['estranheza'])
     total_heavy_flavor = sum(1 for r in resultados if r['heavy_flavor'])
@@ -288,7 +276,8 @@ def mostrar_estatisticas(resultados):
     print(f"Com pelo menos uma informação: {total_com_algo} ({total_com_algo/total*100:.1f} %)")
     print(f"Com acelerador: {total_aceleradores} ({total_aceleradores/total*100:.1f} %)")
     print(f"Com detector: {total_detectores} ({total_detectores/total*100:.1f} %)")
-    print(f"Com colisão: {total_colisoes} ({total_colisoes/total*100:.1f} %)")
+    print(f"Com colisão (confirmada por contexto): {total_colisoes} ({total_colisoes/total*100:.1f} %)")
+    print(f"Com colisão DUVIDOSA (sem contexto por perto): {total_colisoes_duvidosas} ({total_colisoes_duvidosas/total*100:.1f} %)")
     print(f"Com energia: {total_energia} ({total_energia/total*100:.1f} %)")
     print(f"Com estranheza: {total_estranheza} ({total_estranheza/total*100:.1f} %)")
     print(f"Com heavy-flavour: {total_heavy_flavor} ({total_heavy_flavor/total*100:.1f} %)")
@@ -326,6 +315,7 @@ def montar_dataframe_final(resultados):
             'Acelerador': formatar_lista_simples(r['aceleradores']),
             'Detector': formatar_lista_simples(r['detectores']),
             'Colisão': formatar_colisoes(r['colisoes']),
+            'Colisão (duvidosa)': formatar_colisoes(r['colisoes_duvidosas']),
             'Energia': formatar_energia(r['energia']),
             'Estranheza': r['estranheza'],
             'Heavy-flavour': r['heavy_flavor'],
