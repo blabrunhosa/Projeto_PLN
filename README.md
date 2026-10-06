@@ -125,8 +125,6 @@ Com o `i` é possível voltar a `saida/extracoes_agrupadas.jsonl` e ver o sistem
 - Só cobre os **1.689 abstracts com extração válida**, ou seja, os que têm um sistema de colisão hadrônico identificado. Resumos sem esse tipo de colisão ficam de fora.
 - Para atualizar a base (novos dados ou nova extração), é preciso regenerar os embeddings com `python 06_gerar_embeddings.py`.
 
----
-
 ## Rodando o pipeline completo
 
 ```bash
@@ -163,16 +161,12 @@ O prompt (`prompt_colisoes.py`) define uma entrada por par (sistema de colisão,
 
 O **ano de publicação não vem da LLM**: é anexado depois, a partir do `candidatos.csv`, para evitar anos inventados.
 
----
-
 ## Avaliação da qualidade
 
 1. **Checagem de alucinação** (`04_checar_alucinacao.py`). Verifica se o `energia_valor` extraído aparece no abstract de origem, com normalização de artefatos de OCR (`5:02` → `5.02`, `2 . 76` → `2.76`). Resultado atual: 1.647 de 1.649 (99,9%). Para inspecionar as falhas, use `ver_falhas_alucinacao.py`.
 2. **Precisão por revisão manual** (`05_avaliar_amostra.py`). Mostra um abstract por vez, ao lado das extrações feitas, e pergunta se está tudo certo (`s`/`n`/`p`/`q`). As respostas ficam em `saida/revisao.jsonl` (o script pode ser interrompido e retomado), e ao final imprime a precisão. Cada julgamento vale por abstract: basta uma entrada errada para marcar `n`, o que torna a métrica mais rigorosa do que contar entrada por entrada.
 
 Observação: a checagem de alucinação confirma que o **número** está no texto, mas não que ele foi associado ao sistema de colisão correto. Essa parte é medida pela precisão manual.
-
----
 
 ## Licença
 
