@@ -1,0 +1,129 @@
+espectros_contendo_distribuicoes = [distribuicao_de_pt, distribuicao_de_momento, distribuicao_de_rapidez, distribuicoes_diferenciais, momento_transverso_medio, razoes_de_particulas]
+
+geometria_colisao = [centralidade, geometria_inicial, estruturas_colisao]
+
+choque_espalhamento = [secao_de_choque, inelasticidade, espalhamento_elastico]
+
+energia_transversa_densidade = [energia_transversa, transverse_energia, densidade_de_energia, energia_inicial, densidade_energia]
+
+fluxo = [fluxo_coletivo, fluxo_de_particulas, azimutal_asimmetrias, flutuacoes_de_fluxo, decorrelacoes_de_fluxo]
+
+flutuacoes = [flutuacoes_evento_a_evento, intermittencia]
+
+correlacoes = [correlacoes_de_particulas, correlacoes_azimutais, balance_functions, correlacoes_jato_hadron]
+
+producao_de_jatos = [producao_de_jatos, producao_de_dijets, producao_de_dijetos, producao_de_dijetes, jatos, identificacao_de_jatos, tagging_de_jatos]
+
+reconstrucao_de_jatos = [reconstrucao_de_jatos, calibracao_de_jatos, algoritmos_de_jatos, resolucao_de_jatos, tracking_em_jatos]
+
+propriedades_de_jatos = [fragmentacao_de_jatos, estrutura_de_jatos, subestrutura_de_jatos, propriedades_de_jatos, analise_de_jatos, espectro_de_jatos, formato_de_jatos, carga_de_jato, geometria_de_jatos]
+
+supressao = [supressao_de_jatos, perda_de_energia, supressao_de_particulas]
+
+quarkonia = [heavy_flavor, producao_de_quarkonia, estados_vinculados]
+
+sondas_eletromagneticas = [producao_de_fotons, producao_de_dileptons, emissao_de_bremsstrahlung, producao_de_leptons]
+
+producao_de_hadrons = [producao_de_hadrons_leves, producao_de_hadrons, producao_de_mesons, ressonancias, producao_de_particulas, producao_de_pi0]
+
+fragmentacao_hadronizacao = [fragmentacao, fragmentacao_nuclear, fissao, hadronizacao, producao_de_fragmentos]
+
+interacoes_hadronicas = [interacao_hadronica, interacoes_hadronicas]
+
+barions_stopping = [baryon_stopping, stopagem_de_carga, razao_barion_meson, distribuicao_de_barions, transporte_de_barions, razao_barion_carga, transparencia_nuclear]
+
+antimateria_nucleos_leves = [producao_de_antimateria, producao_de_nucleos_leves]
+
+neutrons_emissao_frontal = [emissao_frontal, producao_de_neutrons, producao_de_neutrons_frontais]
+
+fenomenos_quirais_magneticos = [efeito_magnetico_quiral, efeito_vortical_quiral, simetria_quiral, sphaleron_transitions]
+
+spin_e_polarizacao = [polarizacao, correlacoes_de_spin, assimetrias_de_spin, assimetria_de_spin]
+
+emaranhamento_quantico = [entrelacamento_quantico, quantum_entanglement, bell_nonlocality, spin_density_matrix]
+
+assimetria_de_carga = [assimetria_de_carga, asimetria_de_carga]
+
+interferometria = [interferometria_hbt, tamanho_de_fonte]
+
+producao_de_bosons = [producao_de_bosons, producao_de_bosons_eletrofracos, producao_de_bosons_vetoriais, producao_de_boson_z, producao_de_w_bosons, producao_de_bosons_W, producao_de_bosons_z_w, massa_de_boson_w, vetor_boson_scattering, acoplamentos_de_gauge]
+
+higgs = [producao_de_higgs, producao_de_boson_de_higgs, busca_de_higgs, producao_de_bosons_escalar, acoplamentos_de_higgs, acoplamento_de_higgs, producao_de_higgs_cargado, decaimento_de_higgs]
+
+top_quark = [producao_de_top, monotop_producao, producao_de_top_quark, massa_de_quark_top, top_quark_mass, top_quark_tagging, producao_de_top_partner]
+
+tau = [identificacao_de_tau, producao_de_tau]
+
+muons_eletrons = [deteccao_de_muons, reconstrucao_de_miuons, reconstrucao_de_muons, reconstrucao_de_eletrons]
+
+neutrinos = [producao_de_neutrinos, momentos_dipolo_neutrino, deteccao_de_neutrinos, interacoes_neutrinos, fluxo_de_neutrinos]
+
+nova_fisica = [busca_de_nova_fisica, nova_fisica, busca_por_nova_fisica]
+
+supersimetria = [busca_de_susy, busca_por_susy]
+
+materia_escura = [busca_de_materia_escura, busca_de_dark_photons]
+
+buracos_negros = [busca_de_buracos_negros, producao_de_buracos_negros]
+
+particulas_novas = [producao_de_particulas_novas, producao_de_bosons_novos, busca_de_particulas_novas]
+
+particulas_vida_longa = [busca_particulas_longas, particulas_de_vida_longo, busca_de_particulas_longamente_vivas]
+
+exoticos = [producao_de_particulas_exoticas, producao_de_leptoquarks, producao_de_monopolos, fenomenos_exoticos, producao_de_strangelets, busca_de_particulas_exoticas, producao_de_exoticos]
+
+gluons_saturacao = [producao_de_gluons, estrutura_de_gluons, densidade_de_gluons_tmd, saturacao_de_partons]
+
+partons_pdfs = [estrutura_de_partons, producao_de_partons, distribuicao_de_partons, distribuicoes_partonicas, funcoes_parton_nucleares, scattering_parton_duplo]
+
+estrutura_nuclear = [deformacao_nuclear, clusters_alfa, camada_neutron, estrutura_nuclear]
+
+efeitos_nucleares = [modificacao_nuclear, sombreamento_nuclear, efeitos_nucleares, efeito_cronin, fator_modificacao_nuclear]
+
+qgp = [propriedades_QGP, propriedades_do_sistema, assinaturas_de_qgp, comportamento_da_materia, formacao_de_quark_matter, sinais_de_qgp, formacao_de_qgp, fenomenologia_qcd]
+
+transicoes_diagrama_de_fase = [transicao_de_fase, transicoes_de_fase, phase_transitions, critical_phenomena, estrutura_de_fase_qcd, diagrama_de_fase_qcd]
+
+termodinamica_equacao_de_estado = [potenciais_quimicos, equacao_de_estado_nuclear, equacao_de_estado, entropia, entropia_dinamica, termalizacao_de_sabor_leve]
+
+freezeout_temperatura = [temperatura, temperatura_de_freezeout, temperatura_de_freeze_out, parametros_de_freeze_out, temperatura_cinetica, temperatura_emissao]
+
+hidrodinamica_transporte = [hidrodinamica, propriedades_de_transporte, transporte_de_materia, evolucao_espaco_tempo, tempo_vida]
+
+formas_de_evento = [forma_de_evento, formato_de_eventos, formas_de_evento, event_shapes, event_shape_analysis, hadronic_event_shapes, formas_evento_hadronico, spherocity_transversal, topologia_de_eventos, classificacao_de_eventos]
+
+evento_subjacente = [evento_subjacente, underlying_event]
+
+background = [background_measurements, sensibilidade_fundo]
+
+difracao = [difracao, diffracao, gap_de_rapidez, rapidity_gap]
+
+processos_fotons = [fotoproducao, interacoes_induzidas_por_fotons]
+
+luminosidade = [luminosidade, luminosidade_integrada, medicao_de_luminosidade, monitoramento_de_luminosidade, luminosity_measurement]
+
+acelerador_e_feixe = [acelerador_desenho, caracterizacao_do_acelerador, comissionamento_de_acelerador, perdas_de_feixe, monitoramento_de_feixe, tamanho_de_bunch, diagnostico_de_feixe]
+
+caracterizacao_de_detector = [desempenho_detector, desempenho_do_detector, detector_performance, caracterizacao_detector, caracterizacao_de_detector, eficiencia_detector, resolucao_temporal, resolucao_energetica, estabilidade_detector, monitoramento_detector, monitoramento_de_detector, testes_detector, calorimetria, reconstrucao_de_detector, deteccao_de_protons]
+
+calibracao = [calibracao_detector, calibracao, calibracao_de_detectores, calibracao_de_energia]
+
+taxa_de_eventos = [desempenho_de_trigger, desempenho_do_trigger, eficiencia_de_trigger, sistema_de_trigger, taxa_de_disparo, taxa_de_eventos, filtragem_de_eventos]
+
+pid = [reconstrucao_de_eventos, reconstrucao_de_particulas, reconstrucao_de_mesons, eficiencia_de_reconstrucao, reconstrucao_de_momento, identificacao_de_particulas]
+
+tracking = [reconstrucao_de_trilhas, reconstrucao_de_rastros, desempenho_de_rastreamento, eficiencia_de_rastreamento, reconstrucao_de_vertices, vertices_secundarios, vertices_primarios]
+
+radiacao = [monitoramento_de_radiacao, radioatividade_residual]
+
+simulacao = [metodologia_de_simulacao, simulacao_de_eventos]
+
+decaimento_de_particulas = [decaiemento_de_particulas]
+
+multiplicidade
+espectro_de_particulas
+estranheza
+leis_de_conservacao
+energia_transversa_faltante
+observaveis_de_chuveiro_aereo
+caracterizacao_de_material
