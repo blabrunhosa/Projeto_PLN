@@ -1,0 +1,10 @@
+pandas
+numpy
+openai
+xlrd
+
+# SPECTER2 local (06_gerar_embeddings.py e 07_buscar.py):
+torch
+transformers
+adapters
+huggingface_hub
