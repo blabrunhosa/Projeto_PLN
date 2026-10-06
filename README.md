@@ -13,7 +13,6 @@ A matéria de Processamento de Linguagem Natural foi ministrada por:
 - **Profº Dr. James Moraes de Almeida**
 
 # Licença
-## Licença
 
 Este projeto está licenciado sob a [MIT License](LICENSE).
 
