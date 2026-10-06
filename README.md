@@ -121,7 +121,7 @@ Com o `i` é possível voltar a `saida/extracoes_agrupadas.jsonl` e ver o sistem
 
 ### Limitações
 
-- A busca é **puramente semântica**: não filtra por sistema, energia ou ano. Esses campos estão em `extracoes_agrupadas.jsonl`, e podem ser usados para filtrar os resultados depois (usando o `i`).
+- A busca é **puramente semântica**, ela não filtra por sistema, energia ou ano. Esses campos estão em `extracoes_agrupadas.jsonl`, e podem ser usados para filtrar os resultados depois (usando o `i`).
 - Só cobre os **1.689 abstracts com extração válida**, ou seja, os que têm um sistema de colisão hadrônico identificado. Resumos sem esse tipo de colisão ficam de fora.
 - Para atualizar a base (novos dados ou nova extração), é preciso regenerar os embeddings com `python 06_gerar_embeddings.py`.
 
@@ -159,7 +159,7 @@ O prompt (`prompt_colisoes.py`) define uma entrada por par (sistema de colisão,
 - Só colisões **hádron–hádron** (p, íons) são válidas; e⁺e⁻, DIS e colisões com fótons são descartadas.
 - Resumo sem sistema identificável devolve `{"entradas": []}`, e essas linhas são removidas no `tratamento_basico.py`.
 
-O **ano de publicação não vem da LLM**: é anexado depois, a partir do `candidatos.csv`, para evitar anos inventados.
+O ano de publicação não vem da LLM, ele é anexado depois, a partir do `candidatos.csv`, para evitar anos inventados.
 
 ## Avaliação da qualidade
 
