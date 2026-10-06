@@ -5,7 +5,7 @@ Projeto da disciplina de Processamento de Linguagem Natural (4º semestre do bac
 O objetivo é servir de **visão geral e guia para quem está começando em Física de Altas Energias (HEP)**. A partir de resumos de artigos, o pipeline extrai, para cada colisão discutida, o **sistema de colisão** (p–p, p–Pb, Pb–Pb, Au–Au…), a **energia**, o **acelerador**, o **experimento**, a **instituição** e os **observáveis** estudados. Com esses dados estruturados é possível:
 
 - analisar a evolução da área ao longo dos anos (quais sistemas e aceleradores dominam cada época);
-- **buscar artigos por significado** (busca semântica), sem depender só de palavras-chave e metadados.
+- buscar artigos por significado (busca semântica), sem depender só de palavras-chave e metadados.
 
 ## Equipe
 
@@ -39,7 +39,7 @@ Projeto_PLN/
 │   ├── 05_avaliar_amostra.py
 │   ├── 06_gerar_embeddings.py
 │   └── 07_buscar.py            motor de busca
-├── saida/                      arquivos gerados (já incluídos, ver abaixo)
+├── saida/                      arquivos gerados (já incluídos)
 ├── specter/                    adapter do SPECTER2 usado na consulta (baixado pelo 07)
 └── requirements.txt
 ```
@@ -145,7 +145,7 @@ python 07_buscar.py                 # busca
 
 ### Extração com a LLM (passo 03)
 
-A extração usa a **IlumA**, a LLM do CNPEM (`pipeline/config.py` define `BASE_URL` e `MODELO`), que só é acessível a quem tem token e rede do CNPEM. O token é lido, nesta ordem, da variável de ambiente `ILUMA_TOKEN`, do arquivo `~/.iluma_token` ou digitado no terminal. Não coloque o token no repositório.
+A extração usa a **IlumA**, a LLM do CNPEM (`pipeline/config.py` define `BASE_URL` e `MODELO`), que só é acessível a quem tem token e rede do CNPEM. O token é lido, nesta ordem, da variável de ambiente `ILUMA_TOKEN`, do arquivo `~/.iluma_token` ou digitado no terminal.
 
 Quem não tem acesso pode pular os passos 02 e 03, porque `saida/extracoes.jsonl` já está no repositório e todos os passos seguintes funcionam a partir dele.
 
@@ -164,9 +164,10 @@ O ano de publicação não vem da LLM, ele é anexado depois, a partir do `candi
 ## Avaliação da qualidade
 
 1. **Checagem de alucinação** (`04_checar_alucinacao.py`). Verifica se o `energia_valor` extraído aparece no abstract de origem, com normalização de artefatos de OCR (`5:02` → `5.02`, `2 . 76` → `2.76`). Resultado atual: 1.647 de 1.649 (99,9%). Para inspecionar as falhas, use `ver_falhas_alucinacao.py`.
-2. **Precisão por revisão manual** (`05_avaliar_amostra.py`). Mostra um abstract por vez, ao lado das extrações feitas, e pergunta se está tudo certo (`s`/`n`/`p`/`q`). As respostas ficam em `saida/revisao.jsonl` (o script pode ser interrompido e retomado), e ao final imprime a precisão. Cada julgamento vale por abstract: basta uma entrada errada para marcar `n`, o que torna a métrica mais rigorosa do que contar entrada por entrada.
+2. 
+3. **Precisão por revisão manual** (`05_avaliar_amostra.py`). Mostra um abstract por vez, ao lado das extrações feitas, e pergunta se está tudo certo (`s`/`n`/`p`/`q`). As respostas ficam em `saida/revisao.jsonl` (o script pode ser interrompido e retomado), e ao final imprime a precisão. Cada julgamento vale por abstract: basta uma entrada errada para marcar `n`, o que torna a métrica mais rigorosa do que contar entrada por entrada.
 
-Observação: a checagem de alucinação confirma que o **número** está no texto, mas não que ele foi associado ao sistema de colisão correto. Essa parte é medida pela precisão manual.
+Observação: a checagem de alucinação confirma que o número está no texto, mas não que ele foi associado ao sistema de colisão correto. Essa parte é medida pela precisão manual.
 
 ## Licença
 
