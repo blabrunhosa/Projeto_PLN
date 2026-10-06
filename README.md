@@ -18,32 +18,6 @@ O objetivo é servir de **visão geral e guia para quem está começando em Fís
 
 ---
 
-## Visão geral do pipeline
-
-```
-Dados/DADOS*.xls                       exportações bibliográficas (título, abstract, ano)
-   │  01_filtrar_candidatos.py         filtro por expressões regulares (generoso)
-   ▼
-saida/candidatos.csv                   abstracts candidatos, com índice estável `i`
-   │  03_rodar_lote.py                 extração estruturada com uma LLM (IlumA)
-   ▼
-saida/extracoes.jsonl                  uma linha por abstract: {"i", "entradas": [...]}
-   │  tratamento_basico.py             ordena, remove vazios, anexa o ano de publicação
-   ▼
-saida/extracoes_tratadas.jsonl
-   │  agrupar_observaveis.py           agrupa observáveis sinônimos (saida/grupos.txt)
-   ▼
-saida/extracoes_agrupadas.jsonl        ← dados estruturados finais
-   │  04_checar_alucinacao.py          o valor de energia extraído está no texto?
-   │  05_avaliar_amostra.py            revisão manual → precisão
-   │  06_gerar_embeddings.py           SPECTER2 (adapter proximity)
-   ▼
-saida/extracoes_embeddings.jsonl       vetores de 768 dimensões, norma L2 = 1
-   │  07_buscar.py                     busca semântica por similaridade de cosseno
-   ▼
-resultados da busca
-```
-
 ## Estrutura do repositório
 
 ```
@@ -74,7 +48,31 @@ Projeto_PLN/
 
 Todos os caminhos vêm de `pipeline/config.py`. A pasta `saida/` já contém o resultado de todas as etapas, então dá para usar a busca e as análises sem rodar a extração com a LLM.
 
----
+## Visão geral do pipeline
+
+```
+Dados/DADOS*.xls                       exportações bibliográficas (título, abstract, ano)
+   │  01_filtrar_candidatos.py         filtro por expressões regulares (generoso)
+   ▼
+saida/candidatos.csv                   abstracts candidatos, com índice estável `i`
+   │  03_rodar_lote.py                 extração estruturada com uma LLM (IlumA)
+   ▼
+saida/extracoes.jsonl                  uma linha por abstract: {"i", "entradas": [...]}
+   │  tratamento_basico.py             ordena, remove vazios, anexa o ano de publicação
+   ▼
+saida/extracoes_tratadas.jsonl
+   │  agrupar_observaveis.py           agrupa observáveis sinônimos (saida/grupos.txt)
+   ▼
+saida/extracoes_agrupadas.jsonl        ← dados estruturados finais
+   │  04_checar_alucinacao.py          o valor de energia extraído está no texto?
+   │  05_avaliar_amostra.py            revisão manual → precisão
+   │  06_gerar_embeddings.py           SPECTER2 (adapter proximity)
+   ▼
+saida/extracoes_embeddings.jsonl       vetores de 768 dimensões, norma L2 = 1
+   │  07_buscar.py                     busca semântica por similaridade de cosseno
+   ▼
+resultados da busca
+```
 
 ## Instalação
 
