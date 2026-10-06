@@ -16,8 +16,6 @@ O objetivo é servir de **visão geral e guia para quem está começando em Fís
 
 - **Profº Dr. James Moraes de Almeida**
 
----
-
 ## Estrutura do repositório
 
 ```
